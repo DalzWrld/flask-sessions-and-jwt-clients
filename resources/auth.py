@@ -1,7 +1,8 @@
 from flask import make_response, request, session
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from flask_restful import Resource
-from marshmallow import IntegrityError, ValidationError
+from marshmallow import ValidationError
+from sqlalchemy.exc import IntegrityError
 
 from extensions import log
 from models.user import User, db

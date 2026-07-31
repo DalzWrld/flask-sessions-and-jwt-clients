@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Resource
 
 from models import JournalEntry, db
-from schemas import journal_schema, journals_schema
+from schemas.journal_schema import journal_schema, journals_schema
 
 
 class JournalList(Resource):
