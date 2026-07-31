@@ -84,3 +84,24 @@ class Journal(Resource):
         db.session.commit()
 
         return make_response(journal_schema.dump(entry), 200)
+
+    @jwt_required()
+    def delete(self, id):
+
+        current_user = get_jwt_identity()
+
+        entry = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
+
+        if not entry:
+            response = {
+                "status": 404,
+                "message": "Journal entry not found."
+            }
+            return make_response(response, 404)
+
+        db.session.delete(entry)
+        db.session.commit()
+
+        return make_response({
+            "message": "Journal entry deleted successfully."
+        }, 200)
