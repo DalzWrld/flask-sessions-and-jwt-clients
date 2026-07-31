@@ -16,6 +16,7 @@ importlib-resources = "*"
 pytest = "*"
 flask-bcrypt = "*"
 flask-jwt-extended = "*"
+structlog = "*"
 
 [dev-packages]
 
