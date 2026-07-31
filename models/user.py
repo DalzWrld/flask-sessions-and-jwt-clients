@@ -19,7 +19,7 @@ class User(db.Model):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password = generate_password_hash(password).decode("utf-8")
 
     def authenticate(self, password):
         return check_password_hash(
