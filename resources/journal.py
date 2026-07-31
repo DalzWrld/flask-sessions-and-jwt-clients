@@ -28,3 +28,31 @@ class JournalList(Resource):
             "pages": pagination.pages,
             "total": pagination.total
         }, 200)
+
+    @jwt_required()
+    def post(self):
+
+        current_user = get_jwt_identity()
+
+        data = request.get_json()
+
+        title = data.get("title")
+        content = data.get("content")
+
+        if not title or not content:
+            response = {
+                "status": 400,
+                "message": "Title and content are required."
+            }
+            return make_response(response, 400)
+
+        entry = JournalEntry(
+            title=title,
+            content=content,
+            user_id=current_user
+        )
+
+        db.session.add(entry)
+        db.session.commit()
+
+        return make_response(journal_schema.dump(entry), 201)
