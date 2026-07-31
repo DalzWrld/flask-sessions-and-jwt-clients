@@ -17,6 +17,7 @@ pytest = "*"
 flask-bcrypt = "*"
 flask-jwt-extended = "*"
 structlog = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
