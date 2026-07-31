@@ -23,3 +23,11 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
 
     journal_entries = db.relationship("JournalEntry", back_populates="user", cascade="all, delete-orphan", lazy=True)
+
+    @property
+    def password(self):
+        raise AttributeError("Password is write-only.")
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
