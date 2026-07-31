@@ -10,4 +10,9 @@ from models import db, User
 from schemas import user_schema
 
 class Register(Resource):
-    
+    def post(self):
+        data = request.get_json()
+
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
