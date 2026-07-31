@@ -1,15 +1,10 @@
-from flask import request
+from flask import make_response, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Resource
-from flask_jwt_extended import (
-    jwt_required,
-    get_jwt_identity
-)
 
-from models import db, JournalEntry
-from schemas import (
-    journal_schema,
-    journals_schema
-)
+from models import JournalEntry, db
+from schemas import journal_schema, journals_schema
+
 
 class JournalList(Resource):
     @jwt_required()
@@ -26,3 +21,10 @@ class JournalList(Resource):
             .order_by(JournalEntry.created_at.desc())
             .paginate(page=page, per_page=per_page)
         )
+
+        return make_response({
+            "entries": journals_schema.dump(pagination.items),
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "total": pagination.total
+        }, 200)
