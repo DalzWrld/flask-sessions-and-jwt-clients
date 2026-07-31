@@ -1,12 +1,120 @@
-from flask import request
+from flask import make_response, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Resource
-from flask_jwt_extended import (
-    jwt_required,
-    get_jwt_identity
-)
 
-from models import db, JournalEntry
-from schemas import (
-    journal_schema,
-    journals_schema
-)
+from models import JournalEntry, db
+from schemas import journal_schema, journals_schema
+
+
+class JournalList(Resource):
+    @jwt_required()
+    def get(self):
+
+        current_user = get_jwt_identity()
+
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 5, type=int)
+
+        pagination = (
+            JournalEntry.query
+            .filter_by(user_id=current_user)
+            .order_by(JournalEntry.created_at.desc())
+            .paginate(page=page, per_page=per_page)
+        )
+
+        return make_response({
+            "entries": journals_schema.dump(pagination.items),
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "total": pagination.total
+        }, 200)
+
+    @jwt_required()
+    def post(self):
+
+        current_user = get_jwt_identity()
+
+        data = request.get_json()
+
+        title = data.get("title")
+        content = data.get("content")
+
+        if not title or not content:
+            response = {
+                "status": 400,
+                "message": "Title and content are required."
+            }
+            return make_response(response, 400)
+
+        entry = JournalEntry(
+            title=title,
+            content=content,
+            user_id=current_user
+        )
+
+        db.session.add(entry)
+        db.session.commit()
+
+        return make_response(journal_schema.dump(entry), 201)
+
+
+class Journal(Resource):
+    @jwt_required()
+    def get(self, id):
+        journal = Journal.query.filter_by(id=id).first()
+
+        if journal:
+            return make_response(journal_schema.dump(journal), 200)
+        else:
+            response = {
+                "status": 404, 
+                "message": "Journal not found"
+            }
+            return make_response(response, 404)
+    
+    @jwt_required()
+    def patch(self, id):
+
+        current_user = get_jwt_identity()
+
+        entry = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
+
+        if not entry:
+            response = {
+                "status": 404,
+                "message": "Journal entry not found."
+            }
+            return make_response(response, 404)
+
+        data = request.get_json()
+
+        if "title" in data:
+            entry.title = data["title"]
+
+        if "content" in data:
+            entry.content = data["content"]
+
+        db.session.commit()
+
+        return make_response(journal_schema.dump(entry), 200)
+
+    @jwt_required()
+    def delete(self, id):
+
+        current_user = get_jwt_identity()
+
+        entry = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
+
+        if not entry:
+            response = {
+                "status": 404,
+                "message": "Journal entry not found."
+            }
+            return make_response(response, 404)
+
+        db.session.delete(entry)
+        db.session.commit()
+
+        return make_response({
+            "message": "Journal entry deleted successfully."
+        }, 200)
