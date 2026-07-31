@@ -3,44 +3,75 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from flask_restful import Resource
 
 from models import User, db
-from schemas import user_schema
+from schemas import user_schema, register_schema
 
 
 class Register(Resource):
     def post(self):
-        data = request.get_json()
+        try:
+            data = request.get_json()
+            
+                validated_data = register_schema.load(data=data)
+            
+                if User.query.filter_by(
+                        email_address=validated_data["email_address"]
+                    ).first():
+                        return make_response(
+                            {"status": 409, "message": "Email address already taken"}, 409
+                        )
+                if User.query.filter_by(phone=validated_data["phone"]).first():
+                    return make_response(
+                        {"status": 409, "message": "Phone number already taken"}, 409
+                    )
+                    
+                user = User(
+                    first_name=validated_data["first_name"],
+                    last_name=validated_data["last_name"],
+                    email_address=validated_data["email_address"],
+                    phone=validated_data["phone"],
+                )
+            
+                    
+                user.set_password(validated_data["password"])
+            
+                db.session.add(user)
+                db.session.commit()
+            
+                    
+                session["user_id"] = user.id
+            
+                response = {
+                    "message": "Account created successfully",
+                    "data": user_schema.dump(user)
+                }
+                return make_response(response, 200)
 
-        validated_data = register_schema.load(data=data)
-
-        if not username or not email or not password:
+        except ValidationError as err:
+            log.error("validation_error", errors=err.messages)
             response = {
                 "status": 400,
-                "message": "Username, email and password are required."
+                "message": "Validation error(s) occurred",
+                "errors": {**err.messages},
             }
             return make_response(response, 400)
 
-        if User.query.filter_by(username=username).first():
+        except IntegrityError as ie:
+            db.session.rollback()  # rollback the db to the previous state in case of an integrity error
+            log.error(
+                "integrity_error", error=str(ie)
+            )  # this displays the stack error messages server side and does not expose the error to the client side
             response = {
-                "status": 400,
-                "message": "Username already exists."
+                "status": 409,
+                "message": "A user with that email address or phone already exists",
             }
-            return make_response(response, 400)
+        
+            return make_response(response, 409)
 
-        if User.query.filter_by(email=email).first():
+        except Exception as e:  # noqa: BLE001
+            db.session.rollback()
+            log.error("unexpected_error", error=str(e))
             response = {
-                "status": 400,
-                "message": "Email already exists."
+                "status": 500,
+                "message": "An internal server error occurred",
             }
-            return make_response(response, 400)
-
-        user = User(
-            username=username,
-            email=email
-        )
-
-        user.password = password
-
-        db.session.add(user)
-        db.session.commit()
-
-        return user_schema.dump(user), 201
+            return make_response(response, 500)
