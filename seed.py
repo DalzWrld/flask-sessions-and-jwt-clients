@@ -1,14 +1,14 @@
-from faker import Faker
 import random
 
+from faker import Faker
+
 from app import app
-from models import db, User, JournalEntry
+from models import JournalEntry, User, db
 
 fake = Faker()
 
 
 with app.app_context():
-
     db.drop_all()
     db.create_all()
 
@@ -31,7 +31,6 @@ with app.app_context():
     entries = []
 
     for _ in range(50):
-
         entry = JournalEntry(
             title=fake.sentence(nb_words=5),
             content=fake.paragraph(nb_sentences=5),
