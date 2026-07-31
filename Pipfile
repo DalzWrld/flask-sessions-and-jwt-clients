@@ -9,6 +9,13 @@ flask-sqlalchemy = "*"
 flask-migrate = "*"
 flask-restful = "*"
 werkzeug = "*"
+marshmallow = "*"
+faker = "*"
+importlib-metadata = "*"
+importlib-resources = "*"
+pytest = "*"
+flask-bcrypt = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 
