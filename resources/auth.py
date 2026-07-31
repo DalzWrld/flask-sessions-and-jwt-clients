@@ -98,7 +98,6 @@ class Login(Resource):
 
 
 class LoggedIn(Resource):
-
     @jwt_required()
     def get(self):
 
@@ -114,3 +113,9 @@ class LoggedIn(Resource):
             return make_response(response, 404)
 
         return make_response(user_schema.dump(user), 200)
+
+
+class Logout(Resource):
+    def delete(self):
+        session.clear()
+        return {}, 204
