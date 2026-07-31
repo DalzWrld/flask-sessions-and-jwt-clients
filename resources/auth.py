@@ -73,4 +73,44 @@ class Register(Resource):
             return make_response(response, 500)
 
 
-# class Login(Resource):
+class Login(Resource):
+    def post(self):
+        data = request.get_json()
+
+        email = data.get("email")
+        password = data.get("password")
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user or not user.authenticate(password):
+            response = {
+                "status": 401,
+                "message": "Invalid email or password."
+            }
+            return make_response(response, 401)
+
+        access_token = create_access_token(identity=user.id)
+
+        return make_response({
+            "access_token": access_token,
+            "user": user_schema.dump(user)
+        }, 200)
+
+
+class LoggedIn(Resource):
+
+    @jwt_required()
+    def get(self):
+
+        current_user = get_jwt_identity()
+
+        user = User.query.get(current_user)
+
+        if not user:
+            response = {
+                "status": 404,
+                "message": "User not found."
+            }
+            return make_response(response, 404)
+
+        return make_response(user_schema.dump(user), 200)
