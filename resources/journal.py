@@ -61,6 +61,8 @@ class JournalList(Resource):
 class Journal(Resource):
     @jwt_required()
     def get(self, id):
+        current_user = get_jwt_identity()
+
         journal = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
 
         if journal:

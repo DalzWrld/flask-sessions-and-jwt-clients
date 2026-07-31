@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, request
+from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api
 
@@ -23,8 +24,11 @@ db.init_app(app)
 bcrypt.init_app(app)
 jwt.init_app(app)
 
+CORS(app)
+
 migrate = Migrate(app, db)
 api = Api(app)
+
 
 
 api.add_resource(Register, "/register")
