@@ -58,7 +58,7 @@ class Login(Resource):
             }
             return make_response(response, 401)
 
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
 
         return make_response({
             "access_token": access_token,
@@ -70,9 +70,9 @@ class LoggedIn(Resource):
     @jwt_required()
     def get(self):
 
-        current_user = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
-        user = User.query.get(current_user)
+        user = User.query.get(current_user_id)
 
         if not user:
             response = {

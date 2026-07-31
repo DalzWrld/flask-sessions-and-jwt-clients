@@ -10,14 +10,14 @@ class JournalList(Resource):
     @jwt_required()
     def get(self):
 
-        current_user = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 5, type=int)
 
         pagination = (
             JournalEntry.query
-            .filter_by(user_id=current_user)
+            .filter_by(user_id=current_user_id)
             .order_by(JournalEntry.created_at.desc())
             .paginate(page=page, per_page=per_page)
         )
@@ -32,7 +32,7 @@ class JournalList(Resource):
     @jwt_required()
     def post(self):
 
-        current_user = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
         data = request.get_json(force=True)
 
@@ -49,7 +49,7 @@ class JournalList(Resource):
         entry = JournalEntry(
             title=title,
             content=content,
-            user_id=current_user
+            user_id=current_user_id
         )
 
         db.session.add(entry)
@@ -61,9 +61,9 @@ class JournalList(Resource):
 class Journal(Resource):
     @jwt_required()
     def get(self, id):
-        current_user = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
-        journal = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
+        journal = JournalEntry.query.filter_by(id=id, user_id=current_user_id).first()
 
         if journal:
             return make_response(journal_schema.dump(journal), 200)
@@ -77,9 +77,9 @@ class Journal(Resource):
     @jwt_required()
     def patch(self, id):
 
-        current_user = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
-        entry = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
+        entry = JournalEntry.query.filter_by(id=id, user_id=current_user_id).first()
 
         if not entry:
             response = {
@@ -103,9 +103,9 @@ class Journal(Resource):
     @jwt_required()
     def delete(self, id):
 
-        current_user = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
 
-        entry = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
+        entry = JournalEntry.query.filter_by(id=id, user_id=current_user_id).first()
 
         if not entry:
             response = {
