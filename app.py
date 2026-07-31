@@ -5,7 +5,6 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_restful import Api
 
-from config import Config
 from extensions import bcrypt, jwt
 from models import db
 from resources.auth import LoggedIn, Login, Logout, Register
