@@ -56,3 +56,31 @@ class JournalList(Resource):
         db.session.commit()
 
         return make_response(journal_schema.dump(entry), 201)
+
+
+class Journal(Resource):
+    @jwt_required()
+    def patch(self, id):
+
+        current_user = get_jwt_identity()
+
+        entry = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
+
+        if not entry:
+            response = {
+                "status": 404,
+                "message": "Journal entry not found."
+            }
+            return make_response(response, 404)
+
+        data = request.get_json()
+
+        if "title" in data:
+            entry.title = data["title"]
+
+        if "content" in data:
+            entry.content = data["content"]
+
+        db.session.commit()
+
+        return make_response(journal_schema.dump(entry), 200)
