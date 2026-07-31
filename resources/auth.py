@@ -8,7 +8,7 @@ from schemas import user_schema
 
 class Register(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json(force=True)
     
         username = data.get("username")
         email = data.get("email")
@@ -44,7 +44,7 @@ class Register(Resource):
 
 class Login(Resource):
     def post(self):
-        data = request.get_json()
+        data = request.get_json(force=True)
 
         email = data.get("email")
         password = data.get("password")

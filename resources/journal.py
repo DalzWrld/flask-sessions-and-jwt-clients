@@ -34,7 +34,7 @@ class JournalList(Resource):
 
         current_user = get_jwt_identity()
 
-        data = request.get_json()
+        data = request.get_json(force=True)
 
         title = data.get("title")
         content = data.get("content")
@@ -61,7 +61,7 @@ class JournalList(Resource):
 class Journal(Resource):
     @jwt_required()
     def get(self, id):
-        journal = Journal.query.filter_by(id=id).first()
+        journal = JournalEntry.query.filter_by(id=id, user_id=current_user).first()
 
         if journal:
             return make_response(journal_schema.dump(journal), 200)
@@ -86,7 +86,7 @@ class Journal(Resource):
             }
             return make_response(response, 404)
 
-        data = request.get_json()
+        data = request.get_json(force=True)
 
         if "title" in data:
             entry.title = data["title"]

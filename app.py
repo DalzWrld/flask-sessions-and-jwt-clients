@@ -1,11 +1,11 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, request
 from flask_migrate import Migrate
 from flask_restful import Api
 
-from extensions import bcrypt, jwt
+from extensions import bcrypt, jwt, log
 from models import db
 from resources.auth import LoggedIn, Login, Logout, Register
 from resources.journal import Journal, JournalList
@@ -35,6 +35,13 @@ api.add_resource(LoggedIn, "/loggedin")
 api.add_resource(JournalList, "/journal")
 api.add_resource(Journal, "/journal/<int:id>")
 
+@app.before_request
+def log_request():
+    log.info(
+        "request",
+        method=request.method,
+        content_type=request.headers.get("Content-Type"),
+    )
 
 @app.route("/")
 def home():
