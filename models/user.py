@@ -1,4 +1,6 @@
-from flask_bcrypt import check_password_hash, generate_password_hash
+from flask_bcrypt import check_password_hash
+
+from extensions import bcrypt
 
 from . import db
 
@@ -19,7 +21,7 @@ class User(db.Model):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password).decode("utf-8")
+        self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
 
     def authenticate(self, password):
         return check_password_hash(
