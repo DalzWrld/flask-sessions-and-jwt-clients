@@ -14,20 +14,19 @@ class Register(Resource):
             data = request.get_json()
             validated_data = register_schema.load(data=data)
             
-            if User.query.filter_by(email_address=validated_data["email_address"]).first():
+            if User.query.filter_by(email=validated_data["email"]).first():
                 return make_response(
                     {"status": 409, "message": "Email address already taken"}, 409
                 )
-            if User.query.filter_by(phone=validated_data["phone"]).first():
+            if User.query.filter_by(username=validated_data["username"]).first():
                 return make_response(
-                    {"status": 409, "message": "Phone number already taken"}, 409
+                    {"status": 409, "message": "Username already taken"}, 409
                 )
                     
             user = User(
-                first_name=validated_data["first_name"],
-                last_name=validated_data["last_name"],
-                email_address=validated_data["email_address"],
-                phone=validated_data["phone"],
+                username=validated_data["username"],
+                email=validated_data["email"],
+                password=validated_data["password"],
             )
                     
             user.set_password(validated_data["password"])
@@ -53,10 +52,10 @@ class Register(Resource):
             return make_response(response, 400)
 
         except IntegrityError as ie:
-            db.session.rollback()  # rollback the db to the previous state in case of an integrity error
+            db.session.rollback()
             log.error(
                 "integrity_error", error=str(ie)
-            )  # this displays the stack error messages server side and does not expose the error to the client side
+            )
             response = {
                 "status": 409,
                 "message": "A user with that email address or phone already exists",
@@ -72,3 +71,6 @@ class Register(Resource):
                 "message": "An internal server error occurred",
             }
             return make_response(response, 500)
+
+
+# class Login(Resource):
