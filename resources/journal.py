@@ -60,6 +60,19 @@ class JournalList(Resource):
 
 class Journal(Resource):
     @jwt_required()
+    def get(self, id):
+        journal = Journal.query.filter_by(id=id).first()
+
+        if journal:
+            return make_response(journal_schema.dump(journal), 200)
+        else:
+            response = {
+                "status": 404, 
+                "message": "Journal not found"
+            }
+            return make_response(response, 404)
+    
+    @jwt_required()
     def patch(self, id):
 
         current_user = get_jwt_identity()
